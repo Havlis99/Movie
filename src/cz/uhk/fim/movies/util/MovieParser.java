@@ -43,7 +43,7 @@ public class MovieParser {
         String title = rootObject.getString("Title");
         String year = rootObject.getString("Year");
         Date releaseDate = DataHandler.getDateFromString(rootObject.getString("Released"));
-        int runtime = Integer.parseInt(rootObject.getString("Runtime").replace("min",""));
+        int runtime = Integer.parseInt(rootObject.getString("Runtime").replace(" min", ""));
 
         List<Genre> genres = new ArrayList<>();
         String[] genreArray = rootObject.getString("Genre").split(",");
@@ -55,8 +55,7 @@ public class MovieParser {
         String writer = rootObject.getString("Writer");
 
         List<Actor> actors = new ArrayList<>();
-        String[] actorArray = rootObject.getString("Actor").split(",");
-        for (String s : actorArray) {
+        for (String s : rootObject.getString("Actors").split(",")) {
             actors.add(new Actor(s));
         }
 

@@ -6,21 +6,21 @@ import cz.uhk.fim.movies.util.MovieParser;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements ActionListener {
 
+    private JMenuItem moviesItem;
     private List<Movie> movies;
     private JLabel lblPName = new JLabel("Název:");
     private JLabel lblPYear = new JLabel("Rok:");
     private JLabel lblPType = new JLabel("Typ:");
     private JLabel lblPoster = new JLabel();
+    private List<MenuItem> menuItems;
 
     public MainFrame() {
         initUI();
@@ -39,6 +39,55 @@ public class MainFrame extends JFrame {
     }
 
     private void initUI() {
+
+        try {
+            HashMap<String, String> dataMap = FileUtils.decomposeData(FileUtils.readStringFromFile(FileUtils.TYPE_GENRES));
+            dataMap.toString();
+            System.out.println(FileUtils.composeData(dataMap));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        menuItems = new ArrayList<>();
+        JMenuBar menuBar = new JMenuBar();
+        JMenu mainMenu, moviesSubmenu, genresMenu, yearsMenu;
+        mainMenu = new JMenu("Menu");
+
+        moviesItem = new JMenuItem("Seznam filmů");
+        moviesItem.addActionListener(this);
+
+        moviesSubmenu = new JMenu("Seznam filmů podle");
+        genresMenu = new JMenu("žánru");
+        yearsMenu = new JMenu("roku");
+
+        String[] genres = {"Akční", "Sci-Fi", "Horor", "Drama"};
+        String[] years = {"1977", "1985", "1990", "1993", "2000", "2005", "2017", "2020"};
+
+        mainMenu.add(moviesItem);
+        mainMenu.add(moviesSubmenu);
+
+        moviesSubmenu.add(genresMenu);
+        moviesSubmenu.add(yearsMenu);
+
+        for (String s : genres) {
+            JMenuItem item = new JMenuItem(s);
+            item.addActionListener(this);
+            menuItems.add(new MenuItem(String.format("Seznam filmů podle žánru: %s", s), "genres", s, item));
+            genresMenu.add(item);
+        }
+
+        for (String s : years) {
+            JMenuItem item = new JMenuItem(s);
+            item.addActionListener(this);
+            menuItems.add(new MenuItem(String.format("Seznam filmů podle roku: %s", s), "years", s, item));
+            yearsMenu.add(item);
+        }
+
+        menuBar.add(mainMenu);
+
+        setJMenuBar(menuBar);
+
+
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         JPanel panel = new JPanel();
@@ -150,7 +199,7 @@ public class MainFrame extends JFrame {
         btnAdd.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(!movies.isEmpty()){
+                if (!movies.isEmpty()) {
                     addMovie(movies.get(0));
                 }
                 setDataToUi();
@@ -160,7 +209,7 @@ public class MainFrame extends JFrame {
         btnNext.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(!movies.isEmpty()){
+                if (!movies.isEmpty()) {
                     nextMovie(movies.get(0));
                 }
                 setDataToUi();
@@ -188,14 +237,15 @@ public class MainFrame extends JFrame {
     private void addMovie(Movie m) {
         System.out.println(m);
         try {
-            FileUtils.saveStringToFile(m.getMovieId());
+            FileUtils.saveStringToFile(m.getMovieId(), FileUtils.TYPE_ALL);
+            System.out.println(FileUtils.readStringFromFile(FileUtils.TYPE_ALL));
         } catch (IOException e) {
             e.printStackTrace();
         }
         movies.remove(m);
     }
 
-    private void nextMovie(Movie m){
+    private void nextMovie(Movie m) {
         System.out.println(m);
         movies.remove(m);
     }
@@ -226,5 +276,15 @@ public class MainFrame extends JFrame {
 //                MovieType.MOVIE);
 
         //System.out.println(m1);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JMenuItem item = (JMenuItem) e.getSource();
+        for (MenuItem menuItem : menuItems) {
+            if (menuItem.getItem().equals(item)) {
+                new MovieListFrame(menuItem);
+            }
+        }
     }
 }

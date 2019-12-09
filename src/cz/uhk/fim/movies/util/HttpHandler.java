@@ -19,8 +19,10 @@ public class HttpHandler {
     }
 
     public static String getDetailById(String id){
-        String url = String.format("%s&s=%s",API_URL,id);
-        return "";
+        String url = String.format("%s&i=%s",API_URL,id);
+        String jsonResponse = getHttpResult(url);
+        System.out.println(jsonResponse);
+        return jsonResponse;
     }
 
     private static String getHttpResult(String resourceUrl) {
